@@ -3,11 +3,12 @@
 import { useState, useRef, useEffect } from 'react';
 import Navbar from './components/Navbar';
 import PixelTrail from './components/PixelTrail';
+import ReadyOverlay from './components/ReadyOverlay';
 
 const MAX_CRUSH   = 180;
 const STIFFNESS   = 0.35;  // spring pull toward target
 const DAMPING     = 0.72;  // < 1 = underdamped → overshoot/bounce
-const BEAT_INTERVAL = 60 / 93.3; // ~0.643s — derived from 25 recorded cycles
+const BEAT_INTERVAL = 60 / 93; // ~0.645s — derived from 25 recorded cycles
 const BEAT_OFFSET   = 0.229;     // seconds before first beat
 
 export default function Home() {
@@ -32,8 +33,11 @@ export default function Home() {
     const loop = () => {
       const t = audioRef.current?.currentTime ?? 0;
 
-      // audio loop detected → reset beat index (visual state carries over smoothly)
-      if (t < lastAudioTime - 1) lastFiredIdx = -1;
+      // audio loop detected → hold crush pose, restart beat sequence
+      if (t < lastAudioTime - 1) {
+        crushTargetRef.current = MAX_CRUSH;
+        lastFiredIdx = -1;
+      }
       lastAudioTime = t;
 
       if (t >= BEAT_OFFSET) {
@@ -69,6 +73,7 @@ export default function Home() {
 
   useEffect(() => {
     document.body.classList.toggle('overflow-hidden', !started);
+    document.documentElement.classList.toggle('overflow-hidden', !started);
   }, [started]);
 
   useEffect(() => {
@@ -84,16 +89,7 @@ export default function Home() {
 
       <audio ref={audioRef} src="/music/thick_of_it_thomas_remix.mp3" loop />
 
-      {!started && (
-        <div onClick={handleStart}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black cursor-pointer"
-        >
-          <div className="text-white text-center">
-            <p className="text-2xl tracking-[0.2em] uppercase">ready?</p>
-            <p className="text-sm tracking-[0.3em] uppercase opacity-50 mt-2">click to start</p>
-          </div>
-        </div>
-      )}
+      {!started && <ReadyOverlay onStart={handleStart} />}
 
       <div className="relative h-screen">
 

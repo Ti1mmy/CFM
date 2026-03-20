@@ -14,4 +14,21 @@
 
 html, body {
   overflow-x: clip;
+  scrollbar-gutter: stable;
+}
+
+@keyframes ready-intro {
+  from { opacity: 0; letter-spacing: 0.05em; }
+  to   { opacity: 1; letter-spacing: 0.2em; }
+}
+
+@keyframes ready-pulse {
+  0%, 100% { opacity: 1;   transform: scale(1); }
+  50%       { opacity: 0.5; transform: scale(1.04); }
+}
+
+.ready-text {
+  animation:
+    ready-intro 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards,
+    ready-pulse 2.4s ease-in-out 0.8s infinite;
 }
