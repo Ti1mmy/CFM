@@ -302,12 +302,12 @@ export default function Home() {
       </div>
 
       {/* Black gap between hero and about — with gears straddling the boundary */}
-      <div className="relative h-12 bg-black" style={{ zIndex: 48, overflow: 'visible' }}>
+      <div className="relative h-12 bg-black" style={{ zIndex: 60, overflow: 'visible' }}>
         {/* Horizontal wires spanning the boundary */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           ref={sepWiresRef}
-          src="/sepereate_wires.png"
+          src="/images/sepereate_wires.png"
           alt=""
           className="absolute left-0 w-full pointer-events-none select-none"
           style={{
@@ -322,7 +322,7 @@ export default function Home() {
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           ref={leftGearRef}
-          src="/left_gear.png"
+          src="/images/left_gear.png"
           alt=""
           className="absolute pointer-events-none select-none"
           style={{
@@ -340,7 +340,7 @@ export default function Home() {
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           ref={rightGearRef}
-          src="/right_gear.png"
+          src="/images/right_gear.png"
           alt=""
           className="absolute pointer-events-none select-none"
           style={{
@@ -359,7 +359,7 @@ export default function Home() {
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           ref={leftGear2Ref}
-          src="/left_gear.png"
+          src="/images/left_gear.png"
           alt=""
           className="absolute pointer-events-none select-none"
           style={{
@@ -377,7 +377,7 @@ export default function Home() {
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           ref={rightGear2Ref}
-          src="/right_gear.png"
+          src="/images/right_gear.png"
           alt=""
           className="absolute pointer-events-none select-none"
           style={{
@@ -396,7 +396,7 @@ export default function Home() {
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           ref={leftGear3Ref}
-          src="/left_gear.png"
+          src="/images/left_gear.png"
           alt=""
           className="absolute pointer-events-none select-none"
           style={{
@@ -414,7 +414,7 @@ export default function Home() {
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           ref={rightGear3Ref}
-          src="/right_gear.png"
+          src="/images/right_gear.png"
           alt=""
           className="absolute pointer-events-none select-none"
           style={{
@@ -435,9 +435,6 @@ export default function Home() {
         <AboutSection onVisibilityChange={handleAboutVisibility} audioRef={audioRef} />
       </div>
 
-      {/* DEBUG: boundary line between about and class */}
-      <div style={{ height: 2, background: 'red', position: 'relative', zIndex: 999 }} />
-
       <div id="class">
         <ClassSection onVisibilityChange={handleClassVisibility} />
       </div>
@@ -446,7 +443,7 @@ export default function Home() {
         <WebringSection onVisibilityChange={handleWebringVisibility} />
       </div>
 
-      <div className="fixed bottom-4 right-4 z-50">
+      <div className="fixed bottom-4 right-4 z-[999]">
         <MuteButton muted={muted} onToggle={toggleMute} volume={volume} onVolumeChange={handleVolumeChange} />
       </div>
 
