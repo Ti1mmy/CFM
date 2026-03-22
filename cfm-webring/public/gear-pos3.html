@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>All Gears Position Tuner</title>
+<style>
+  * { margin: 0; box-sizing: border-box; }
+  body { background: #000; color: #fff; font-family: monospace; }
+
+  .controls {
+    position: fixed;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(20,20,20,0.95);
+    border: 1px solid #333;
+    padding: 16px 24px;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 480px;
+    max-height: 95vh;
+    overflow-y: auto;
+  }
+  .controls h2 { font-size: 14px; text-align: center; margin-bottom: 2px; }
+  .controls h3 { font-size: 12px; color: #888; margin-top: 8px; border-top: 1px solid #333; padding-top: 6px; }
+  .control-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .control-row label { width: 110px; font-size: 12px; }
+  .control-row input[type=range] { flex: 1; }
+  .control-row .val { width: 65px; text-align: right; font-size: 12px; color: #aaa; }
+
+  .output {
+    margin-top: 6px;
+    padding: 8px;
+    background: #111;
+    border: 1px solid #333;
+    font-size: 11px;
+    white-space: pre;
+    color: #ccc;
+  }
+
+  .stage {
+    position: relative;
+    width: 100vw;
+    height: 400vh;
+  }
+
+  .gap-bar {
+    position: absolute;
+    top: 20vh;
+    left: 0;
+    width: 100%;
+    height: 48px;
+    background: #111;
+    border: 1px dashed #333;
+  }
+
+  .gear { position: absolute; pointer-events: none; }
+  .gear-label {
+    position: absolute;
+    font-size: 14px;
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 3px;
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+
+<div class="controls">
+  <h2>ALL GEARS POSITION TUNER</h2>
+
+  <h3>GEAR 1 (top)</h3>
+  <div class="control-row">
+    <label>bottom (%)</label>
+    <input type="range" id="g1bot" min="-3000" max="0" value="-1200" step="50">
+    <span class="val" id="g1botVal">-1200%</span>
+  </div>
+  <div class="control-row">
+    <label>left/right (%)</label>
+    <input type="range" id="g1lr" min="-20" max="10" value="-10" step="0.5">
+    <span class="val" id="g1lrVal">-10%</span>
+  </div>
+  <div class="control-row">
+    <label>height (px)</label>
+    <input type="range" id="g1h" min="200" max="1200" value="900" step="10">
+    <span class="val" id="g1hVal">900px</span>
+  </div>
+  <div class="control-row">
+    <label>z-index</label>
+    <input type="range" id="g1z" min="1" max="5" value="2" step="1">
+    <span class="val" id="g1zVal">2</span>
+  </div>
+
+  <h3>GEAR 2 (middle)</h3>
+  <div class="control-row">
+    <label>bottom (%)</label>
+    <input type="range" id="g2bot" min="-4000" max="0" value="-1800" step="50">
+    <span class="val" id="g2botVal">-1800%</span>
+  </div>
+  <div class="control-row">
+    <label>left/right (%)</label>
+    <input type="range" id="g2lr" min="-20" max="10" value="-6" step="0.5">
+    <span class="val" id="g2lrVal">-6%</span>
+  </div>
+  <div class="control-row">
+    <label>height (px)</label>
+    <input type="range" id="g2h" min="200" max="1200" value="500" step="10">
+    <span class="val" id="g2hVal">500px</span>
+  </div>
+  <div class="control-row">
+    <label>z-index</label>
+    <input type="range" id="g2z" min="1" max="5" value="3" step="1">
+    <span class="val" id="g2zVal">3</span>
+  </div>
+
+  <h3>GEAR 3 (bottom)</h3>
+  <div class="control-row">
+    <label>bottom (%)</label>
+    <input type="range" id="g3bot" min="-5000" max="-1000" value="-3150" step="50">
+    <span class="val" id="g3botVal">-3150%</span>
+  </div>
+  <div class="control-row">
+    <label>left/right (%)</label>
+    <input type="range" id="g3lr" min="-20" max="10" value="-10" step="0.5">
+    <span class="val" id="g3lrVal">-10%</span>
+  </div>
+  <div class="control-row">
+    <label>height (px)</label>
+    <input type="range" id="g3h" min="200" max="1200" value="900" step="10">
+    <span class="val" id="g3hVal">900px</span>
+  </div>
+  <div class="control-row">
+    <label>z-index</label>
+    <input type="range" id="g3z" min="1" max="5" value="2" step="1">
+    <span class="val" id="g3zVal">2</span>
+  </div>
+
+  <div class="output" id="output"></div>
+</div>
+
+<div class="stage">
+  <div class="gap-bar" id="gapBar">
+    <img src="/left_gear.png" class="gear" id="g1L">
+    <img src="/right_gear.png" class="gear" id="g1R">
+    <img src="/left_gear.png" class="gear" id="g2L">
+    <img src="/right_gear.png" class="gear" id="g2R">
+    <img src="/left_gear.png" class="gear" id="g3L">
+    <img src="/right_gear.png" class="gear" id="g3R">
+    <span class="gear-label" id="label1" style="color:#ff6666;">1</span>
+    <span class="gear-label" id="label2" style="color:#66ff66;">2</span>
+    <span class="gear-label" id="label3" style="color:#6666ff;">3</span>
+  </div>
+</div>
+
+<script>
+  const els = {
+    g1L: document.getElementById('g1L'), g1R: document.getElementById('g1R'),
+    g2L: document.getElementById('g2L'), g2R: document.getElementById('g2R'),
+    g3L: document.getElementById('g3L'), g3R: document.getElementById('g3R'),
+  };
+  const labels = {
+    l1: document.getElementById('label1'),
+    l2: document.getElementById('label2'),
+    l3: document.getElementById('label3'),
+  };
+  const output = document.getElementById('output');
+
+  const s = (id) => document.getElementById(id);
+  const v = (id) => document.getElementById(id + 'Val');
+
+  const ids = ['g1bot','g1lr','g1h','g1z','g2bot','g2lr','g2h','g2z','g3bot','g3lr','g3h','g3z'];
+
+  function applyGear(leftEl, rightEl, label, bot, lr, h, z, color) {
+    const style = { bottom: bot+'%', height: h+'px', width: 'auto', zIndex: z, transformOrigin: '10% 50%' };
+    Object.assign(leftEl.style, style);
+    leftEl.style.left = lr + '%';
+    leftEl.style.border = '1px solid ' + color;
+
+    const styleR = { bottom: bot+'%', height: h+'px', width: 'auto', zIndex: z, transformOrigin: '90% 50%' };
+    Object.assign(rightEl.style, styleR);
+    rightEl.style.right = lr + '%';
+    rightEl.style.border = '1px solid ' + color;
+
+    // Position label near left gear
+    label.style.bottom = bot + '%';
+    label.style.left = '50%';
+    label.style.zIndex = 10;
+  }
+
+  function update() {
+    const g1 = { bot: +s('g1bot').value, lr: +s('g1lr').value, h: +s('g1h').value, z: +s('g1z').value };
+    const g2 = { bot: +s('g2bot').value, lr: +s('g2lr').value, h: +s('g2h').value, z: +s('g2z').value };
+    const g3 = { bot: +s('g3bot').value, lr: +s('g3lr').value, h: +s('g3h').value, z: +s('g3z').value };
+
+    ids.forEach(id => { v(id).textContent = s(id).value + (id.includes('z') ? '' : id.includes('h') ? 'px' : '%'); });
+
+    applyGear(els.g1L, els.g1R, labels.l1, g1.bot, g1.lr, g1.h, g1.z, '#ff6666');
+    applyGear(els.g2L, els.g2R, labels.l2, g2.bot, g2.lr, g2.h, g2.z, '#66ff66');
+    applyGear(els.g3L, els.g3R, labels.l3, g3.bot, g3.lr, g3.h, g3.z, '#6666ff');
+
+    output.textContent =
+      `GEAR 1: bottom:'${g1.bot}%' left/right:'${g1.lr}%' height:'${g1.h}px' z:${g1.z}\n` +
+      `GEAR 2: bottom:'${g2.bot}%' left/right:'${g2.lr}%' height:'${g2.h}px' z:${g2.z}\n` +
+      `GEAR 3: bottom:'${g3.bot}%' left/right:'${g3.lr}%' height:'${g3.h}px' z:${g3.z}`;
+  }
+
+  // Swing animation
+  let angles = [0, 0, 0];
+  let dirs = [1, -1, 1];
+  let last = performance.now();
+  function animate(now) {
+    const dt = (now - last) / 1000;
+    last = now;
+    for (let i = 0; i < 3; i++) {
+      angles[i] += dirs[i] * dt * 46;
+      if (angles[i] > 15) { angles[i] = 15; dirs[i] = -1; }
+      if (angles[i] < -15) { angles[i] = -15; dirs[i] = 1; }
+    }
+    els.g1L.style.transform = `rotate(${angles[0]}deg)`;
+    els.g1R.style.transform = `rotate(${-angles[0]}deg)`;
+    els.g2L.style.transform = `rotate(${angles[1]}deg)`;
+    els.g2R.style.transform = `rotate(${-angles[1]}deg)`;
+    els.g3L.style.transform = `rotate(${angles[2]}deg)`;
+    els.g3R.style.transform = `rotate(${-angles[2]}deg)`;
+    requestAnimationFrame(animate);
+  }
+
+  ids.forEach(id => s(id).addEventListener('input', update));
+  update();
+  requestAnimationFrame(animate);
+</script>
+</body>
+</html>

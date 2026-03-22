@@ -32,3 +32,29 @@ html, body {
     ready-intro 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards,
     ready-pulse 2.4s ease-in-out 0.8s infinite;
 }
+
+@keyframes terminal-bob {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-8px); }
+}
+
+@keyframes terminal-glow {
+  0%, 100% { box-shadow: 0 0 15px rgba(255, 255, 255, 0.08), 0 0 30px rgba(255, 255, 255, 0.03); }
+  50%      { box-shadow: 0 0 20px rgba(255, 255, 255, 0.14), 0 0 40px rgba(255, 255, 255, 0.06); }
+}
+
+@keyframes terminal-cursor-blink {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0; }
+}
+
+@keyframes about-bg-spin {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to   { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+@keyframes cat-bob {
+  0%, 100% { transform: translateY(0px); }
+  50%      { transform: translateY(-40px); }
+}
+

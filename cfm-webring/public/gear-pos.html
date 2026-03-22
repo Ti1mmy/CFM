@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Gear 2 Position Tuner</title>
+<style>
+  * { margin: 0; box-sizing: border-box; }
+  body { background: #000; color: #fff; font-family: monospace; }
+
+  .controls {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(20,20,20,0.95);
+    border: 1px solid #333;
+    padding: 20px 30px;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 420px;
+  }
+  .controls h2 { font-size: 16px; text-align: center; margin-bottom: 4px; }
+  .control-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .control-row label { width: 140px; font-size: 13px; }
+  .control-row input[type=range] { flex: 1; }
+  .control-row .val { width: 70px; text-align: right; font-size: 13px; color: #aaa; }
+
+  .output {
+    margin-top: 8px;
+    padding: 10px;
+    background: #111;
+    border: 1px solid #333;
+    font-size: 12px;
+    white-space: pre;
+    color: #ccc;
+  }
+
+  .stage {
+    position: relative;
+    width: 100vw;
+    height: 300vh;
+  }
+
+  /* Simulated black gap bar */
+  .gap-bar {
+    position: absolute;
+    top: 50vh;
+    left: 0;
+    width: 100%;
+    height: 48px;
+    background: #111;
+    border: 1px dashed #333;
+  }
+
+  .gear {
+    position: absolute;
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+
+<div class="controls">
+  <h2>GEAR 2 POSITION TUNER</h2>
+  <p style="font-size:11px; color:#888; text-align:center;">Adjust the second (smaller) gear set position. Values are CSS properties on the absolute-positioned img inside the h-12 gap bar.</p>
+
+  <div class="control-row">
+    <label>bottom (%)</label>
+    <input type="range" id="bottom" min="-5000" max="0" value="-3100" step="50">
+    <span class="val" id="bottomVal">-3100%</span>
+  </div>
+
+  <div class="control-row">
+    <label>left offset (%)</label>
+    <input type="range" id="leftOff" min="-20" max="10" value="-6" step="0.5">
+    <span class="val" id="leftOffVal">-6%</span>
+  </div>
+
+  <div class="control-row">
+    <label>right offset (%)</label>
+    <input type="range" id="rightOff" min="-20" max="10" value="-6" step="0.5">
+    <span class="val" id="rightOffVal">-6%</span>
+  </div>
+
+  <div class="control-row">
+    <label>height (px)</label>
+    <input type="range" id="gearH" min="200" max="900" value="500" step="10">
+    <span class="val" id="gearHVal">500px</span>
+  </div>
+
+  <div class="output" id="output"></div>
+</div>
+
+<div class="stage">
+  <div class="gap-bar" id="gapBar">
+    <!-- Big gears (reference, static) -->
+    <img src="/left_gear.png" class="gear" id="bigLeft" style="bottom:-1200%; left:-10%; height:900px; width:auto; opacity:0.3;">
+    <img src="/right_gear.png" class="gear" id="bigRight" style="bottom:-1200%; right:-10%; height:900px; width:auto; opacity:0.3;">
+
+    <!-- Small gears (adjustable) -->
+    <img src="/left_gear.png" class="gear" id="smallLeft">
+    <img src="/right_gear.png" class="gear" id="smallRight">
+  </div>
+</div>
+
+<script>
+  const smallLeft = document.getElementById('smallLeft');
+  const smallRight = document.getElementById('smallRight');
+  const output = document.getElementById('output');
+
+  const sliders = {
+    bottom: document.getElementById('bottom'),
+    leftOff: document.getElementById('leftOff'),
+    rightOff: document.getElementById('rightOff'),
+    gearH: document.getElementById('gearH'),
+  };
+  const vals = {
+    bottom: document.getElementById('bottomVal'),
+    leftOff: document.getElementById('leftOffVal'),
+    rightOff: document.getElementById('rightOffVal'),
+    gearH: document.getElementById('gearHVal'),
+  };
+
+  let angle = 0;
+  let dir = 1;
+  let last = performance.now();
+
+  function update() {
+    const bot = +sliders.bottom.value;
+    const lo = +sliders.leftOff.value;
+    const ro = +sliders.rightOff.value;
+    const h = +sliders.gearH.value;
+
+    vals.bottom.textContent = bot + '%';
+    vals.leftOff.textContent = lo + '%';
+    vals.rightOff.textContent = ro + '%';
+    vals.gearH.textContent = h + 'px';
+
+    smallLeft.style.bottom = bot + '%';
+    smallLeft.style.left = lo + '%';
+    smallLeft.style.height = h + 'px';
+    smallLeft.style.width = 'auto';
+    smallLeft.style.transformOrigin = '10% 50%';
+
+    smallRight.style.bottom = bot + '%';
+    smallRight.style.right = ro + '%';
+    smallRight.style.height = h + 'px';
+    smallRight.style.width = 'auto';
+    smallRight.style.transformOrigin = '90% 50%';
+
+    output.textContent =
+      `bottom: '${bot}%'\n` +
+      `left:   '${lo}%'   right: '${ro}%'\n` +
+      `height: '${h}px'`;
+  }
+
+  function animate(now) {
+    const dt = (now - last) / 1000;
+    last = now;
+    angle += dir * dt * 46;
+    if (angle > 15) { angle = 15; dir = -1; }
+    if (angle < -15) { angle = -15; dir = 1; }
+    smallLeft.style.transform = `rotate(${-angle}deg)`;
+    smallRight.style.transform = `rotate(${angle}deg)`;
+    requestAnimationFrame(animate);
+  }
+
+  Object.values(sliders).forEach(s => s.addEventListener('input', update));
+  update();
+  requestAnimationFrame(animate);
+</script>
+</body>
+</html>

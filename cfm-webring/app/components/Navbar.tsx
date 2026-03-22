@@ -13,8 +13,13 @@ const links = [
   { href: "https://github.com/DanielWLiu07/CFM", label: "Github", external: true },
 ];
 
-export default function Navbar() {
+interface NavbarProps {
+  activeRoute?: string;
+}
+
+export default function Navbar({ activeRoute }: NavbarProps) {
   const pathname = usePathname();
+  const currentRoute = activeRoute ?? pathname;
 
   return (
     <NavigationMenu.Root className="relative z-10">
@@ -28,43 +33,65 @@ export default function Navbar() {
           gap: '4px',
         }}
       >
-        {links.map(({ href, label, external }) => (
-          <React.Fragment key={href}>
-            <NavigationMenu.Item key={href}>
-              <NavigationMenu.Link asChild active={pathname === href}>
-                <Link
-                  href={href}
-                  target={external ? '_blank' : undefined}
-                  rel={external ? 'noopener noreferrer' : undefined}
-                  onClick={pathname === href && !external ? () => window.location.reload() : undefined}
-                  className="block no-underline select-none outline-none transition-colors"
-                  style={{
-                    fontFamily: 'var(--font-arcade)',
-                    fontSize: '18px',
-                    letterSpacing: '0.08em',
-                    padding: '5px 16px',
-                    color: pathname === href ? '#fff' : '#000',
-                    background: pathname === href ? '#000' : 'transparent',
-                  }}
-                  onMouseEnter={e => {
-                    if (pathname !== href) {
-                      (e.currentTarget as HTMLElement).style.background = '#000';
-                      (e.currentTarget as HTMLElement).style.color = '#fff';
-                    }
-                  }}
-                  onMouseLeave={e => {
-                    if (pathname !== href) {
-                      (e.currentTarget as HTMLElement).style.background = 'transparent';
-                      (e.currentTarget as HTMLElement).style.color = '#000';
-                    }
-                  }}
-                >
-                  {label}
-                </Link>
-              </NavigationMenu.Link>
-            </NavigationMenu.Item>
-          </React.Fragment>
-        ))}
+        {links.map(({ href, label, external }) => {
+          const isScrollTarget = href === '/' || href === '/about' || href === '/class' || href === '/webring';
+          const isActive = currentRoute === href;
+
+          const handleClick = (e: React.MouseEvent) => {
+            if (!isScrollTarget || external) return;
+            e.preventDefault();
+            if (href === '/') {
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            } else if (href === '/about') {
+              const sections = document.querySelectorAll('section');
+              sections[0]?.scrollIntoView({ behavior: 'smooth' });
+            } else if (href === '/class') {
+              const sections = document.querySelectorAll('section');
+              sections[1]?.scrollIntoView({ behavior: 'smooth' });
+            } else if (href === '/webring') {
+              const sections = document.querySelectorAll('section');
+              sections[2]?.scrollIntoView({ behavior: 'smooth' });
+            }
+          };
+
+          return (
+            <React.Fragment key={href}>
+              <NavigationMenu.Item>
+                <NavigationMenu.Link asChild active={isActive}>
+                  <Link
+                    href={href}
+                    target={external ? '_blank' : undefined}
+                    rel={external ? 'noopener noreferrer' : undefined}
+                    onClick={isScrollTarget && !external ? handleClick : undefined}
+                    className="block no-underline select-none outline-none transition-colors"
+                    style={{
+                      fontFamily: 'var(--font-arcade)',
+                      fontSize: '18px',
+                      letterSpacing: '0.08em',
+                      padding: '5px 16px',
+                      color: isActive ? '#fff' : '#000',
+                      background: isActive ? '#000' : 'transparent',
+                    }}
+                    onMouseEnter={e => {
+                      if (!isActive) {
+                        (e.currentTarget as HTMLElement).style.background = '#000';
+                        (e.currentTarget as HTMLElement).style.color = '#fff';
+                      }
+                    }}
+                    onMouseLeave={e => {
+                      if (!isActive) {
+                        (e.currentTarget as HTMLElement).style.background = 'transparent';
+                        (e.currentTarget as HTMLElement).style.color = '#000';
+                      }
+                    }}
+                  >
+                    {label}
+                  </Link>
+                </NavigationMenu.Link>
+              </NavigationMenu.Item>
+            </React.Fragment>
+          );
+        })}
       </NavigationMenu.List>
     </NavigationMenu.Root>
   );

@@ -3,6 +3,7 @@
 import { useRef, useEffect, useState } from 'react';
 import gsap from 'gsap';
 import LetterGlitch from './LetterGlitch';
+import MuteButton from './MuteButton';
 
 // ── Candlestick ──────────────────────────────────────────────────────────────
 interface CandleData { bull: boolean; totalH: number; bodyH: number; bodyTopPx: number; elevation: number; }
@@ -79,7 +80,7 @@ const CFM_CONFIG = [
   { wickTop: 72, wickBot: 12, depth: 22, baseY: -65 },  // M — highest, longest shadow
 ];
 
-export default function ReadyOverlay({ onStart }: { onStart: () => void }) {
+export default function ReadyOverlay({ onStart, muted, onToggleMute, volume, onVolumeChange }: { onStart: () => void; muted: boolean; onToggleMute: () => void; volume: number; onVolumeChange: (v: number) => void }) {
   const [leaving, setLeaving] = useState(false);
 
   const wrapRef          = useRef<HTMLDivElement>(null);
@@ -303,7 +304,7 @@ export default function ReadyOverlay({ onStart }: { onStart: () => void }) {
     <div
       ref={wrapRef}
       onClick={handleClick}
-      className="fixed inset-0 z-[60] flex flex-col items-center justify-center cursor-pointer overflow-hidden bg-black"
+      className="fixed inset-0 z-[200] flex flex-col items-center justify-center cursor-pointer overflow-hidden bg-black"
     >
       <div className="absolute inset-0">
         <LetterGlitch glitchColors={['#2a2a2a', '#3a3a3a', '#4a4a4a', '#5a5a5a']} glitchSpeed={60} outerVignette smooth />
@@ -410,6 +411,11 @@ export default function ReadyOverlay({ onStart }: { onStart: () => void }) {
         className="absolute bottom-5 right-15 z-[1] pointer-events-none select-none"
         style={{ width: 380, height: 380, transform: 'rotate(20deg) scaleX(1.05)' }}
       />
+
+      {/* Mute button — bottom right */}
+      <div className="absolute bottom-4 right-4 z-10">
+        <MuteButton muted={muted} onToggle={onToggleMute} volume={volume} onVolumeChange={onVolumeChange} />
+      </div>
     </div>
   );
 }

@@ -1,9 +1,14 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import Navbar from './components/Navbar';
 import PixelTrail from './components/PixelTrail';
 import ReadyOverlay from './components/ReadyOverlay';
+import AboutSection from './components/AboutSection';
+import MuteButton from './components/MuteButton';
+import ClassSection from './components/ClassSection';
+import WebringSection from './components/WebringSection';
+import GearTuner from './components/GearTuner';
 
 const MAX_CRUSH   = 180;
 const STIFFNESS   = 0.35;  // spring pull toward target
@@ -13,6 +18,39 @@ const BEAT_OFFSET   = 0.229;     // seconds before first beat
 
 export default function Home() {
   const [started, setStarted] = useState(false);
+  const [muted, setMuted] = useState(false);
+  const [volume, setVolume] = useState(1);
+  const [activeRoute, setActiveRoute] = useState('/');
+
+  const handleAboutVisibility = useCallback((visible: boolean) => {
+    if (visible) {
+      setActiveRoute('/about');
+      window.history.replaceState(null, '', '/about');
+    } else if (activeRoute === '/about') {
+      setActiveRoute('/');
+      window.history.replaceState(null, '', '/');
+    }
+  }, [activeRoute]);
+
+  const handleClassVisibility = useCallback((visible: boolean) => {
+    if (visible) {
+      setActiveRoute('/class');
+      window.history.replaceState(null, '', '/class');
+    } else if (activeRoute === '/class') {
+      setActiveRoute('/about');
+      window.history.replaceState(null, '', '/about');
+    }
+  }, [activeRoute]);
+
+  const handleWebringVisibility = useCallback((visible: boolean) => {
+    if (visible) {
+      setActiveRoute('/webring');
+      window.history.replaceState(null, '', '/webring');
+    } else if (activeRoute === '/webring') {
+      setActiveRoute('/about');
+      window.history.replaceState(null, '', '/about');
+    }
+  }, [activeRoute]);
 
   const audioRef       = useRef<HTMLAudioElement>(null);
   const videoRef       = useRef<HTMLVideoElement>(null);
@@ -23,6 +61,21 @@ export default function Home() {
   const leftWireRef    = useRef<HTMLImageElement>(null);
   const rightWireRef   = useRef<HTMLImageElement>(null);
   const introOffsetRef = useRef<number>(800); // wires start 800px off-screen
+  const shakeRef       = useRef<number>(0);   // screen shake intensity
+  const videoWrapRef   = useRef<HTMLDivElement>(null);
+  const leftGearRef    = useRef<HTMLImageElement>(null);
+  const rightGearRef   = useRef<HTMLImageElement>(null);
+  const leftGear2Ref   = useRef<HTMLImageElement>(null);
+  const rightGear2Ref  = useRef<HTMLImageElement>(null);
+  const leftGear3Ref   = useRef<HTMLImageElement>(null);
+  const rightGear3Ref  = useRef<HTMLImageElement>(null);
+  const sepWiresRef    = useRef<HTMLImageElement>(null);
+  const sepCrushRef    = useRef<number>(0);
+  const sepCrushVelRef = useRef<number>(0);
+  const sepTargetRef   = useRef<number>(0);
+  const gearAngleRef   = useRef<number>(0);
+  const gear2AngleRef  = useRef<number>(0);
+  const gear3AngleRef  = useRef<number>(0);
 
   // ── rAF loop ───────────────────────────────────────────────────────────────
   // Beats are driven from audio.currentTime — perfectly locked to the music.
@@ -49,12 +102,63 @@ export default function Home() {
         if (beatIdx > lastFiredIdx) {
           lastFiredIdx = beatIdx;
           crushTargetRef.current = beatIdx % 2 === 0 ? 0 : MAX_CRUSH;
+          sepTargetRef.current = beatIdx % 2 === 0 ? 0 : 1;
+          // Trigger shake on slam beats (odd = crush inward)
+          if (beatIdx % 2 === 1) {
+            shakeRef.current = 0.04;
+          }
+          // Gears swing between -15 and 15 on beat
+          if (beatIdx % 2 === 1) {
+            gearAngleRef.current = 15;
+            gear2AngleRef.current = 15;
+            gear3AngleRef.current = 15;
+          } else {
+            gearAngleRef.current = -15;
+            gear2AngleRef.current = -15;
+            gear3AngleRef.current = -15;
+          }
         }
       }
 
       crushVelRef.current += (crushTargetRef.current - crushRef.current) * STIFFNESS;
       crushVelRef.current *= DAMPING;
       crushRef.current += crushVelRef.current;
+
+      // Screen shake — scale bump that decays quickly
+      if (shakeRef.current > 0.001) {
+        shakeRef.current *= 0.88;
+      } else {
+        shakeRef.current = 0;
+      }
+      const scale = 1 + shakeRef.current;
+      if (videoWrapRef.current)
+        videoWrapRef.current.style.transform = `scale(${scale})`;
+
+      // Gear rotation — smooth transition applied via CSS, rAF just sets the angle
+      const angle = gearAngleRef.current;
+      if (leftGearRef.current)
+        leftGearRef.current.style.transform = `rotate(${angle}deg)`;
+      if (rightGearRef.current)
+        rightGearRef.current.style.transform = `rotate(${-angle}deg)`;
+      // Gear 2
+      const angle2 = gear2AngleRef.current;
+      if (leftGear2Ref.current)
+        leftGear2Ref.current.style.transform = `rotate(${angle2}deg)`;
+      if (rightGear2Ref.current)
+        rightGear2Ref.current.style.transform = `rotate(${-angle2}deg)`;
+      // Gear 3
+      const angle3 = gear3AngleRef.current;
+      if (leftGear3Ref.current)
+        leftGear3Ref.current.style.transform = `rotate(${angle3}deg)`;
+      if (rightGear3Ref.current)
+        rightGear3Ref.current.style.transform = `rotate(${-angle3}deg)`;
+
+      // Separate wires — spring-driven scaleY pulse on beat
+      sepCrushVelRef.current += (sepTargetRef.current - sepCrushRef.current) * STIFFNESS;
+      sepCrushVelRef.current *= DAMPING;
+      sepCrushRef.current += sepCrushVelRef.current;
+      if (sepWiresRef.current)
+        sepWiresRef.current.style.transform = `translateY(-45%) scaleY(${1 + sepCrushRef.current * 0.3})`;
 
       // Intro slide-in: easeOut from 800 → 0
       const elapsed = performance.now() - introStart;
@@ -77,6 +181,7 @@ export default function Home() {
     setStarted(true);
     videoRef.current!.currentTime = 0;
     audioRef.current!.currentTime = 0;
+    audioRef.current!.muted = muted;
     // Ensure both are actually playing before starting the beat loop
     await Promise.all([
       videoRef.current!.play(),
@@ -85,10 +190,55 @@ export default function Home() {
     startLoop();
   };
 
+  const toggleMute = useCallback(() => {
+    setMuted(prev => {
+      const next = !prev;
+      if (audioRef.current) audioRef.current.muted = next;
+      localStorage.setItem('cfm-muted', String(next));
+      return next;
+    });
+  }, []);
+
+  const handleVolumeChange = useCallback((v: number) => {
+    setVolume(v);
+    if (audioRef.current) audioRef.current.volume = v;
+    if (v === 0) {
+      setMuted(true);
+      if (audioRef.current) audioRef.current.muted = true;
+    } else if (muted) {
+      setMuted(false);
+      if (audioRef.current) audioRef.current.muted = false;
+    }
+    localStorage.setItem('cfm-volume', String(v));
+  }, [muted]);
+
+  // Restore mute/volume preferences from localStorage after hydration
+  useEffect(() => {
+    const storedMuted = localStorage.getItem('cfm-muted') === 'true';
+    if (storedMuted) {
+      setMuted(true);
+      if (audioRef.current) audioRef.current.muted = true;
+    }
+    const storedVol = localStorage.getItem('cfm-volume');
+    if (storedVol !== null) {
+      const v = parseFloat(storedVol);
+      setVolume(v);
+      if (audioRef.current) audioRef.current.volume = v;
+    }
+  }, []);
+
   useEffect(() => {
     document.body.classList.toggle('overflow-hidden', !started);
     document.documentElement.classList.toggle('overflow-hidden', !started);
   }, [started]);
+
+  // Always start at top with overlay on load
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    window.history.replaceState(null, '', '/');
+    setActiveRoute('/');
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -106,15 +256,15 @@ export default function Home() {
   return (
     <div className="bg-black">
 
-      <div className="fixed top-4 left-3 z-50">
-        <Navbar />
+      <div className="fixed top-4 left-3 z-[100]">
+        <Navbar activeRoute={activeRoute} />
       </div>
 
       <audio ref={audioRef} src="/music/thick_of_it_thomas_remix.mp3" loop />
 
-      {!started && <ReadyOverlay onStart={handleStart} />}
+      {!started && <ReadyOverlay onStart={handleStart} muted={muted} onToggleMute={toggleMute} volume={volume} onVolumeChange={handleVolumeChange} />}
 
-      <div className="relative h-screen">
+      <div ref={videoWrapRef} className="relative h-screen" style={{ willChange: 'transform', zIndex: 2 }}>
 
         <img ref={leftWireRef} src="/images/side_wires.png"
           className="absolute top-0 h-full w-auto z-20 pointer-events-none"
@@ -151,9 +301,160 @@ export default function Home() {
         </div>
       </div>
 
-      <section className="relative min-h-screen text-white flex items-center justify-center">
-        HELLO
-      </section>
+      {/* Black gap between hero and about — with gears straddling the boundary */}
+      <div className="relative h-12 bg-black" style={{ zIndex: 48, overflow: 'visible' }}>
+        {/* Horizontal wires spanning the boundary */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          ref={sepWiresRef}
+          src="/sepereate_wires.png"
+          alt=""
+          className="absolute left-0 w-full pointer-events-none select-none"
+          style={{
+            top: '50%',
+            transform: 'translateY(-45%)',
+            width: '100%',
+            height: 'auto',
+            zIndex: 1,
+            willChange: 'transform',
+          }}
+        />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          ref={leftGearRef}
+          src="/left_gear.png"
+          alt=""
+          className="absolute pointer-events-none select-none"
+          style={{
+            bottom: '-1200%',
+            left: '-10%',
+            height: '900px',
+            minHeight: '900px',
+            width: 'auto',
+            maxWidth: 'none',
+            transformOrigin: '10% 50%',
+            transition: 'transform 0.15s ease-out',
+            zIndex: 2,
+          }}
+        />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          ref={rightGearRef}
+          src="/right_gear.png"
+          alt=""
+          className="absolute pointer-events-none select-none"
+          style={{
+            bottom: '-1200%',
+            right: '-10%',
+            height: '900px',
+            minHeight: '900px',
+            width: 'auto',
+            maxWidth: 'none',
+            transformOrigin: '90% 50%',
+            transition: 'transform 0.15s ease-out',
+            zIndex: 2,
+          }}
+        />
+        {/* Center gears — behind the others */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          ref={leftGear2Ref}
+          src="/left_gear.png"
+          alt=""
+          className="absolute pointer-events-none select-none"
+          style={{
+            bottom: '-1650%',
+            left: '-6%',
+            height: '500px',
+            minHeight: '500px',
+            width: 'auto',
+            maxWidth: 'none',
+            transformOrigin: '10% 50%',
+            transition: 'transform 0.15s ease-out',
+            zIndex: 3,
+          }}
+        />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          ref={rightGear2Ref}
+          src="/right_gear.png"
+          alt=""
+          className="absolute pointer-events-none select-none"
+          style={{
+            bottom: '-1650%',
+            right: '-6%',
+            height: '500px',
+            minHeight: '500px',
+            width: 'auto',
+            maxWidth: 'none',
+            transformOrigin: '90% 50%',
+            transition: 'transform 0.15s ease-out',
+            zIndex: 3,
+          }}
+        />
+        {/* Third gears — same size as first, different sync */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          ref={leftGear3Ref}
+          src="/left_gear.png"
+          alt=""
+          className="absolute pointer-events-none select-none"
+          style={{
+            bottom: '-2500%',
+            left: '-8%',
+            height: '650px',
+            minHeight: '650px',
+            width: 'auto',
+            maxWidth: 'none',
+            transformOrigin: '10% 50%',
+            transition: 'transform 0.15s ease-out',
+            zIndex: 2,
+          }}
+        />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          ref={rightGear3Ref}
+          src="/right_gear.png"
+          alt=""
+          className="absolute pointer-events-none select-none"
+          style={{
+            bottom: '-2500%',
+            right: '-8%',
+            height: '650px',
+            minHeight: '650px',
+            width: 'auto',
+            maxWidth: 'none',
+            transformOrigin: '90% 50%',
+            transition: 'transform 0.15s ease-out',
+            zIndex: 2,
+          }}
+        />
+      </div>
+
+      <div id="about">
+        <AboutSection onVisibilityChange={handleAboutVisibility} audioRef={audioRef} />
+      </div>
+
+      {/* DEBUG: boundary line between about and class */}
+      <div style={{ height: 2, background: 'red', position: 'relative', zIndex: 999 }} />
+
+      <div id="class">
+        <ClassSection onVisibilityChange={handleClassVisibility} />
+      </div>
+
+      <div id="webring">
+        <WebringSection onVisibilityChange={handleWebringVisibility} />
+      </div>
+
+      <div className="fixed bottom-4 right-4 z-50">
+        <MuteButton muted={muted} onToggle={toggleMute} volume={volume} onVolumeChange={handleVolumeChange} />
+      </div>
+
+      <GearTuner gears={[
+        { ref1: leftGearRef, ref2: rightGearRef, label: 'GEAR 1 (top)', defaults: { bottom: -1200, lr: -10, height: 900, z: 2 } },
+        { ref1: leftGear2Ref, ref2: rightGear2Ref, label: 'GEAR 2 (mid)', defaults: { bottom: -1650, lr: -6, height: 500, z: 3 } },
+        { ref1: leftGear3Ref, ref2: rightGear3Ref, label: 'GEAR 3 (bot)', defaults: { bottom: -2500, lr: -8, height: 650, z: 2 } },
+      ]} />
 
     </div>
   );
