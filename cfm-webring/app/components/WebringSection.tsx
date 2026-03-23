@@ -11,6 +11,7 @@ const BEAT_OFFSET = 0.229;
 interface WebringSectionProps {
   onVisibilityChange: (visible: boolean) => void;
   audioRef: RefObject<HTMLAudioElement | null>;
+  reducedMotion?: boolean;
 }
 
 interface WebringEntry {
@@ -212,7 +213,7 @@ function simulate3D(nodes: Node[], edges: Edge[], w: number, h: number, pinnedIn
 
 // ── Component ───────────────────────────────────────────────────────────────
 
-export default function WebringSection({ onVisibilityChange, audioRef }: WebringSectionProps) {
+export default function WebringSection({ onVisibilityChange, audioRef, reducedMotion }: WebringSectionProps) {
   const sentinelRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [search, setSearch] = useState('');
@@ -360,8 +361,8 @@ export default function WebringSection({ onVisibilityChange, audioRef }: Webring
       }
       cam.bobPhase += 0.006;
 
-      // Beat detection from audio
-      if (audioRef.current && !audioRef.current.paused) {
+      // Beat detection from audio (disabled in reduced motion)
+      if (audioRef.current && !audioRef.current.paused && !reducedMotion) {
         const t = audioRef.current.currentTime;
         const beatIdx = Math.floor((t - BEAT_OFFSET) / BEAT_INTERVAL);
         if (beatIdx > lastBeatIdxRef.current) {
@@ -853,7 +854,7 @@ export default function WebringSection({ onVisibilityChange, audioRef }: Webring
   const listMaxHeight = panelSize.h - 230;
 
   return (
-    <section ref={sectionRef} className="relative h-screen flex flex-col" style={{ zIndex: 10, background: '#000' }}>
+    <section ref={sectionRef} className="relative h-screen flex flex-col" style={{ zIndex: 10, background: '#000', overflow: 'hidden' }}>
       <div ref={sentinelRef} className="absolute top-0 left-0 w-full h-24" />
 
       {/* Three.js background scene */}
@@ -880,7 +881,7 @@ export default function WebringSection({ onVisibilityChange, audioRef }: Webring
       {/* Draggable + resizable search panel */}
       <div
         ref={panelRef}
-        className="absolute z-20"
+        className="absolute z-[60]"
         style={{ top: panelPos.y, left: panelPos.x, width: panelSize.w, userSelect: 'none' }}
       >
         <div
@@ -1020,7 +1021,7 @@ export default function WebringSection({ onVisibilityChange, audioRef }: Webring
 
       {/* Controls bar — bottom center */}
       <div
-        className="absolute z-20 flex items-center gap-5"
+        className="absolute z-[60] flex items-center gap-5"
         style={{
           bottom: 24,
           left: '50%',

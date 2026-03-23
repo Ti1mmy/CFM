@@ -1,6 +1,7 @@
 'use client';
 
-const REPO_URL = 'https://github.com/DanielWLiu07/CFM';
+const FRONTEND_REPO = 'https://github.com/DanielWLiu07/CFM';
+const BACKEND_REPO = 'https://github.com/AadyaCFM/CFM-backend';
 
 const TECH_STACK = {
   frontend: [
@@ -18,6 +19,7 @@ const TECH_STACK = {
     'Turbopack',
     'ESLint',
     'Blender',
+    'Claude Code',
   ],
 };
 
@@ -96,29 +98,55 @@ export default function GithubSection() {
           {/* Divider */}
           <div style={{ borderTop: '1px solid #222', margin: '24px 0' }} />
 
-          {/* GitHub link */}
-          <div className="flex items-center justify-between">
-            <div style={{ fontFamily: 'var(--font-arcade)', fontSize: 11, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.08em' }}>
-              {'>'} open --repo
-            </div>
+          {/* Repo links — two separate repos */}
+          <div style={{ fontFamily: 'var(--font-arcade)', fontSize: 11, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.08em', marginBottom: 16 }}>
+            {'>'} ls repos/
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-3">
             <a
-              href={REPO_URL}
+              href={FRONTEND_REPO}
               target="_blank"
               rel="noopener noreferrer"
-              className="cta-btn"
+              className="cta-btn flex-1"
               style={{
                 fontFamily: 'var(--font-arcade)',
-                fontSize: 11,
+                fontSize: 10,
                 letterSpacing: '0.1em',
                 color: '#fff',
                 border: '1px solid #444',
-                padding: '8px 20px',
+                padding: '10px 16px',
                 background: 'transparent',
                 textDecoration: 'none',
-                display: 'inline-block',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 4,
               }}
             >
-              VIEW ON GITHUB
+              <span style={{ fontSize: 11 }}>FRONTEND</span>
+              <span style={{ color: 'rgba(255,255,255,0.35)', fontSize: 9 }}>Daniel Liu</span>
+            </a>
+            <a
+              href={BACKEND_REPO}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="cta-btn flex-1"
+              style={{
+                fontFamily: 'var(--font-arcade)',
+                fontSize: 10,
+                letterSpacing: '0.1em',
+                color: '#fff',
+                border: '1px solid #444',
+                padding: '10px 16px',
+                background: 'transparent',
+                textDecoration: 'none',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 4,
+              }}
+            >
+              <span style={{ fontSize: 11 }}>BACKEND</span>
+              <span style={{ color: 'rgba(255,255,255,0.35)', fontSize: 9 }}>Aadya</span>
             </a>
           </div>
         </div>

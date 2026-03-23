@@ -217,15 +217,28 @@ function NebulaClouds({ count = 8 }: { count?: number }) {
 
 // ── Concentric Rings ────────────────────────────────────────────────────────
 
-function ConcentricRings() {
+function ConcentricRings({ position = [0, 0, -2] as [number, number, number], baseRotX = Math.PI * 0.45, rotSpeed = 0.02, rings: ringDefs }: {
+  position?: [number, number, number];
+  baseRotX?: number;
+  rotSpeed?: number;
+  rings?: { radius: number; opacity: number }[];
+}) {
   const groupRef = useRef<THREE.Group>(null);
   const beatRef = useContext(BeatContext);
+
+  const rings = useMemo(() => ringDefs ?? [
+    { radius: 3, opacity: 0.06 },
+    { radius: 5, opacity: 0.04 },
+    { radius: 7, opacity: 0.025 },
+    { radius: 9, opacity: 0.015 },
+    { radius: 12, opacity: 0.008 },
+  ], [ringDefs]);
 
   useFrame(({ clock }) => {
     if (!groupRef.current) return;
     const beat = beatRef.current ?? 0;
-    groupRef.current.rotation.x = Math.PI * 0.45 + Math.sin(clock.elapsedTime * 0.1) * 0.05;
-    groupRef.current.rotation.z = clock.elapsedTime * 0.02;
+    groupRef.current.rotation.x = baseRotX + Math.sin(clock.elapsedTime * 0.1) * 0.05;
+    groupRef.current.rotation.z = clock.elapsedTime * rotSpeed;
     const s = 1 + beat * 0.08;
     groupRef.current.scale.setScalar(s);
     groupRef.current.children.forEach((child) => {
@@ -235,16 +248,8 @@ function ConcentricRings() {
     });
   });
 
-  const rings = useMemo(() => [
-    { radius: 3, opacity: 0.06 },
-    { radius: 5, opacity: 0.04 },
-    { radius: 7, opacity: 0.025 },
-    { radius: 9, opacity: 0.015 },
-    { radius: 12, opacity: 0.008 },
-  ], []);
-
   return (
-    <group ref={groupRef} position={[0, 0, -2]}>
+    <group ref={groupRef} position={position}>
       {rings.map((ring, i) => (
         <mesh key={i}>
           <ringGeometry args={[ring.radius - 0.01, ring.radius + 0.01, 128]} />
@@ -414,7 +419,33 @@ export default function WebringBackground({ beatRef }: { beatRef?: RefObject<num
         <FloatingDust count={250} />
         <NebulaClouds count={10} />
         <ShootingStars count={4} />
+        {/* Center rings */}
         <ConcentricRings />
+        {/* Scattered ring groups */}
+        <ConcentricRings
+          position={[-8, 3, -6]}
+          baseRotX={Math.PI * 0.3}
+          rotSpeed={-0.015}
+          rings={[{ radius: 1.5, opacity: 0.04 }, { radius: 2.5, opacity: 0.025 }, { radius: 3.5, opacity: 0.015 }]}
+        />
+        <ConcentricRings
+          position={[7, -2, -8]}
+          baseRotX={Math.PI * 0.6}
+          rotSpeed={0.01}
+          rings={[{ radius: 2, opacity: 0.035 }, { radius: 3, opacity: 0.02 }, { radius: 4.5, opacity: 0.01 }]}
+        />
+        <ConcentricRings
+          position={[-4, -5, -10]}
+          baseRotX={Math.PI * 0.2}
+          rotSpeed={0.025}
+          rings={[{ radius: 1, opacity: 0.03 }, { radius: 2, opacity: 0.02 }, { radius: 3, opacity: 0.01 }]}
+        />
+        <ConcentricRings
+          position={[10, 4, -12]}
+          baseRotX={Math.PI * 0.5}
+          rotSpeed={-0.008}
+          rings={[{ radius: 1.5, opacity: 0.025 }, { radius: 2.5, opacity: 0.015 }, { radius: 4, opacity: 0.008 }]}
+        />
         <FloatingLines count={18} />
         <CentralGlow />
 

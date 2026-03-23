@@ -11,6 +11,7 @@ import WebringSection from './components/WebringSection';
 import GearTuner from './components/GearTuner';
 import GithubSection from './components/GithubSection';
 import DecoTuner from './components/DecoTuner';
+import RingTuner from './components/RingTuner';
 
 const MAX_CRUSH   = 180;
 const STIFFNESS   = 0.35;  // spring pull toward target
@@ -22,6 +23,8 @@ export default function Home() {
   const [started, setStarted] = useState(false);
   const [muted, setMuted] = useState(false);
   const [volume, setVolume] = useState(1);
+  const [reducedMotion, setReducedMotion] = useState(false);
+  const reducedMotionRef = useRef(false);
   const [activeRoute, setActiveRoute] = useState('/');
   const visibleSections = useRef(new Set<string>());
 
@@ -85,6 +88,9 @@ export default function Home() {
   const starLeftRef     = useRef<HTMLImageElement>(null);
   const starRightRef    = useRef<HTMLImageElement>(null);
   const spongeRef       = useRef<HTMLImageElement>(null);
+  const ring1Ref        = useRef<HTMLDivElement>(null);
+  const ring2Ref        = useRef<HTMLDivElement>(null);
+  const ring3Ref        = useRef<HTMLDivElement>(null);
   const wallRef         = useRef<HTMLImageElement>(null);
   const webringBeatRef  = useRef<number>(0);
 
@@ -115,11 +121,11 @@ export default function Home() {
           crushTargetRef.current = beatIdx % 2 === 0 ? 0 : MAX_CRUSH;
           sepTargetRef.current = beatIdx % 2 === 0 ? 0 : 1;
           // Trigger shake on slam beats (odd = crush inward)
-          if (beatIdx % 2 === 1) {
+          if (beatIdx % 2 === 1 && !reducedMotionRef.current) {
             shakeRef.current = 0.04;
           }
           // Webring title beat pulse
-          webringBeatRef.current = 1;
+          if (!reducedMotionRef.current) webringBeatRef.current = 1;
           // Gears swing between -15 and 15 on beat
           if (beatIdx % 2 === 1) {
             gearAngleRef.current = 15;
@@ -170,29 +176,19 @@ export default function Home() {
       webringBeatRef.current *= 0.92;
       const wb = webringBeatRef.current;
       if (webringTitleRef.current) {
-        const s = 1 + wb * 0.04;
-        const y = -wb * 4;
-        const bright = 1.1 + wb * 0.15;
-        const glow1 = 30 + wb * 15;
-        const glowA1 = 0.3 + wb * 0.15;
-        const glow2 = 60 + wb * 20;
-        const glowA2 = 0.15 + wb * 0.1;
+        const s = 1 + wb * 0.02;
+        const y = -wb * 2;
         webringTitleRef.current.style.transform = `translateX(-50%) translateY(${y}px) scale(${s})`;
-        webringTitleRef.current.style.filter = `drop-shadow(0 0 ${glow1}px rgba(255,255,255,${glowA1})) drop-shadow(0 0 ${glow2}px rgba(255,255,255,${glowA2})) brightness(${bright})`;
       }
 
-      // Stars — beat-driven opacity + scale + glow
-      const starScale = 1 + wb * 0.12;
-      const starBright = 1 + wb * 0.4;
-      const starGlow = 10 + wb * 30;
-      const starGlowA = 0.2 + wb * 0.5;
+      // Decos — gentle beat sway + opacity pulse
       for (const ref of [starLeftRef, starRightRef, spongeRef, wallRef]) {
         if (!ref.current) continue;
-        const baseOp = parseFloat(ref.current.dataset.baseOpacity ?? '0.75');
+        const baseOp = parseFloat(ref.current.dataset.baseOpacity ?? '0.2');
         const rot = parseFloat(ref.current.dataset.baseRotation ?? '0');
-        ref.current.style.opacity = `${baseOp + wb * 0.25}`;
-        ref.current.style.transform = `rotate(${rot}deg) translateY(${-wb * 3}px) scale(${starScale})`;
-        ref.current.style.filter = `drop-shadow(0 0 ${starGlow}px rgba(255,255,255,${starGlowA})) brightness(${starBright})`;
+        ref.current.style.opacity = `${baseOp + wb * 0.08}`;
+        ref.current.style.transform = `rotate(${rot}deg) translateY(${-wb * 1.5}px) scale(${1 + wb * 0.02})`;
+        ref.current.style.filter = '';
       }
 
       // Separate wires — spring-driven scaleY pulse on beat
@@ -231,6 +227,13 @@ export default function Home() {
     ]);
     startLoop();
   };
+
+  const toggleReducedMotion = useCallback(() => {
+    setReducedMotion(prev => {
+      reducedMotionRef.current = !prev;
+      return !prev;
+    });
+  }, []);
 
   const toggleMute = useCallback(() => {
     setMuted(prev => {
@@ -510,6 +513,23 @@ export default function Home() {
       </div>
 
       <div id="webring" style={{ position: 'relative', zIndex: 70 }}>
+        {/* Big orbital rings — span entire section, slowly rotate */}
+        <div ref={ring1Ref} className="absolute pointer-events-none" style={{
+          top: '-15%', left: '50%', width: '120vw', height: '120vw',
+          borderRadius: '50%', border: '1.5px solid rgba(255,255,255,0.08)',
+          zIndex: 30, animation: 'ring-spin 180s linear infinite',
+        }} />
+        <div ref={ring2Ref} className="absolute pointer-events-none" style={{
+          top: '-5%', left: '50%', width: '90vw', height: '90vw',
+          borderRadius: '50%', border: '1px solid rgba(255,255,255,0.06)',
+          zIndex: 30, animation: 'ring-spin 240s linear infinite reverse',
+        }} />
+        <div ref={ring3Ref} className="absolute pointer-events-none" style={{
+          top: '5%', left: '50%', width: '140vw', height: '140vw',
+          borderRadius: '50%', border: '1px solid rgba(255,255,255,0.04)',
+          zIndex: 30, animation: 'ring-spin 300s linear infinite',
+        }} />
+
         {/* Webring title — JS-driven beat animation synced to audio */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
@@ -536,15 +556,14 @@ export default function Home() {
           alt=""
           style={{
             position: 'absolute',
-            top: '-20%',
+            top: '-7%',
             left: '3%',
-            height: 340,
             width: 'auto',
             height: 'auto',
             maxWidth: 'none',
             zIndex: 12,
             pointerEvents: 'none',
-            opacity: 0.75,
+            opacity: 0.2,
             transform: 'rotate(-136deg)',
           }}
         />
@@ -555,15 +574,14 @@ export default function Home() {
           alt=""
           style={{
             position: 'absolute',
-            top: '-20%',
+            top: '-7%',
             left: '75%',
-            height: 340,
             width: 'auto',
             height: 'auto',
             maxWidth: 'none',
             zIndex: 12,
             pointerEvents: 'none',
-            opacity: 0.75,
+            opacity: 0.2,
           }}
         />
         {/* Sponge decoration */}
@@ -573,7 +591,7 @@ export default function Home() {
           src="/images/sponge.png"
           alt=""
           className="absolute pointer-events-none select-none"
-          style={{ left: '63%', top: '55%', height: '678px', width: 'auto', maxWidth: 'none', zIndex: 12, opacity: 0.8, transform: 'rotate(0deg)' }}
+          style={{ left: '63%', top: '40%', height: '678px', width: 'auto', maxWidth: 'none', zIndex: 12, opacity: 0.1, transform: 'rotate(0deg)' }}
         />
         {/* Wall decoration */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -582,23 +600,53 @@ export default function Home() {
           src="/images/wall.png"
           alt=""
           className="absolute pointer-events-none select-none"
-          style={{ left: '-14%', top: '60%', height: '466px', width: 'auto', maxWidth: 'none', zIndex: 12, opacity: 0.45, transform: 'rotate(-10deg)' }}
+          style={{ left: '-14%', top: '60%', height: '466px', width: 'auto', maxWidth: 'none', zIndex: 12, opacity: 0.2, transform: 'rotate(-10deg)' }}
         />
-        <WebringSection onVisibilityChange={handleWebringVisibility} audioRef={audioRef} />
+        <WebringSection onVisibilityChange={handleWebringVisibility} audioRef={audioRef} reducedMotion={reducedMotion} />
+      </div>
+
+      <div id="github" className="relative" style={{ zIndex: 60 }}>
+        {/* Black background — behind webring deco */}
+        <div className="absolute inset-0 bg-black" style={{ zIndex: 5 }} />
+        {/* Content — above webring deco */}
+        <div style={{ position: 'relative', zIndex: 15 }}>
+          <GithubSection />
+        </div>
       </div>
 
       <DecoTuner items={[
-        { ref: starLeftRef, label: 'STAR LEFT', defaults: { x: 3, y: -20, size: 340, rotation: -136, opacity: 0.75 } },
-        { ref: starRightRef, label: 'STAR RIGHT', defaults: { x: 75, y: -20, size: 340, rotation: 0, opacity: 0.75 } },
-        { ref: spongeRef, label: 'SPONGE', defaults: { x: 63, y: 55, size: 678, rotation: 0, opacity: 0.8 } },
-        { ref: wallRef, label: 'WALL', defaults: { x: -14, y: 60, size: 466, rotation: -10, opacity: 0.45 } },
+        { ref: starLeftRef, label: 'STAR LEFT', defaults: { x: 3, y: -7, size: 340, rotation: -136, opacity: 0.2 } },
+        { ref: starRightRef, label: 'STAR RIGHT', defaults: { x: 75, y: -7, size: 340, rotation: 0, opacity: 0.2 } },
+        { ref: spongeRef, label: 'SPONGE', defaults: { x: 63, y: 40, size: 678, rotation: 0, opacity: 0.1 } },
+        { ref: wallRef, label: 'WALL', defaults: { x: -14, y: 60, size: 466, rotation: -10, opacity: 0.2 } },
       ]} />
 
-      <div id="github" style={{ position: 'relative', zIndex: 75 }}>
-        <GithubSection />
-      </div>
+      <RingTuner items={[
+        { ref: ring1Ref, label: 'RING 1 (big)', defaults: { top: -15, left: 50, size: 120, opacity: 0.08, borderW: 1.5 } },
+        { ref: ring2Ref, label: 'RING 2 (mid)', defaults: { top: -5, left: 50, size: 90, opacity: 0.06, borderW: 1 } },
+        { ref: ring3Ref, label: 'RING 3 (huge)', defaults: { top: 5, left: 50, size: 140, opacity: 0.04, borderW: 1 } },
+      ]} />
 
-      <div className="fixed bottom-4 right-4 z-[999]">
+      <div className="fixed bottom-4 right-4 z-[999] flex items-end gap-2">
+        <button
+          onClick={toggleReducedMotion}
+          className="mute-btn flex items-center justify-center w-10 h-10 rounded-lg border border-white/20 bg-white/10 backdrop-blur-md text-white/70 hover:text-white cursor-pointer"
+          aria-label={reducedMotion ? 'Enable effects' : 'Reduce motion'}
+          title={reducedMotion ? 'Enable effects' : 'Reduce motion'}
+        >
+          {reducedMotion ? (
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="4" y1="4" x2="20" y2="20" />
+            </svg>
+          ) : (
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M2 12c0 0 2-4 5-4s3 8 6 8 5-4 5-4" />
+              <path d="M2 4l0 16" />
+              <path d="M22 4l0 16" />
+            </svg>
+          )}
+        </button>
         <MuteButton muted={muted} onToggle={toggleMute} volume={volume} onVolumeChange={handleVolumeChange} />
       </div>
 

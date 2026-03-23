@@ -53,6 +53,11 @@ html, body {
   to   { transform: translate(-50%, -50%) rotate(360deg); }
 }
 
+@keyframes ring-spin {
+  from { transform: translateX(-50%) rotate(0deg); }
+  to   { transform: translateX(-50%) rotate(360deg); }
+}
+
 @keyframes cat-bob {
   0%, 100% { transform: translateY(0px) rotate(0deg); }
   25%      { transform: translateY(-20px) rotate(-4deg); }
