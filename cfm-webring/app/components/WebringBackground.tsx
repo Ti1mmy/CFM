@@ -69,8 +69,8 @@ function Stars({ count = 800 }: { count?: number }) {
   return (
     <points ref={ref}>
       <bufferGeometry>
-        <bufferAttribute attach="attributes-position" count={count} array={positions} itemSize={3} />
-        <bufferAttribute attach="attributes-aRandom" count={count} array={randoms} itemSize={1} />
+        <bufferAttribute attach="attributes-position" args={[positions, 3]} />
+        <bufferAttribute attach="attributes-aRandom" args={[randoms, 1]} />
       </bufferGeometry>
       <shaderMaterial ref={matRef} args={[shaderArgs]} />
     </points>
@@ -159,7 +159,7 @@ function FloatingDust({ count = 250 }: { count?: number }) {
   return (
     <points ref={ref}>
       <bufferGeometry>
-        <bufferAttribute attach="attributes-position" count={count} array={positions} itemSize={3} />
+        <bufferAttribute attach="attributes-position" args={[positions, 3]} />
       </bufferGeometry>
       <pointsMaterial size={0.012} sizeAttenuation transparent opacity={0.25} color="#ffffff" depthWrite={false} blending={THREE.AdditiveBlending} />
     </points>

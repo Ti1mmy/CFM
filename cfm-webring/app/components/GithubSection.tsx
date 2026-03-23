@@ -124,15 +124,6 @@ export default function GithubSection() {
         </div>
       </div>
 
-      {/* Sponge */}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src="/images/sponge.png"
-        alt=""
-        className="absolute pointer-events-none select-none"
-        style={{ bottom: 0, right: 0, height: '60%', width: 'auto', maxWidth: 'none', opacity: 0.85 }}
-      />
-
       {/* Footer */}
       <div style={{ fontFamily: 'var(--font-arcade)', fontSize: 9, color: 'rgba(255,255,255,0.2)', marginTop: 32, letterSpacing: '0.1em', textAlign: 'center' }}>
         BUILT BY CFM STUDENTS  //  2026

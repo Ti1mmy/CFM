@@ -10,6 +10,7 @@ import ClassSection from './components/ClassSection';
 import WebringSection from './components/WebringSection';
 import GearTuner from './components/GearTuner';
 import GithubSection from './components/GithubSection';
+import DecoTuner from './components/DecoTuner';
 
 const MAX_CRUSH   = 180;
 const STIFFNESS   = 0.35;  // spring pull toward target
@@ -83,6 +84,8 @@ export default function Home() {
   const webringTitleRef = useRef<HTMLImageElement>(null);
   const starLeftRef     = useRef<HTMLImageElement>(null);
   const starRightRef    = useRef<HTMLImageElement>(null);
+  const spongeRef       = useRef<HTMLImageElement>(null);
+  const wallRef         = useRef<HTMLImageElement>(null);
   const webringBeatRef  = useRef<number>(0);
 
   // ── rAF loop ───────────────────────────────────────────────────────────────
@@ -179,20 +182,17 @@ export default function Home() {
       }
 
       // Stars — beat-driven opacity + scale + glow
-      const starOpacity = 0.75 + wb * 0.25; // 0.75 → 1.0 on beat
       const starScale = 1 + wb * 0.12;
       const starBright = 1 + wb * 0.4;
       const starGlow = 10 + wb * 30;
       const starGlowA = 0.2 + wb * 0.5;
-      if (starLeftRef.current) {
-        starLeftRef.current.style.opacity = `${starOpacity}`;
-        starLeftRef.current.style.transform = `translateY(${-wb * 3}px) scale(${starScale})`;
-        starLeftRef.current.style.filter = `drop-shadow(0 0 ${starGlow}px rgba(255,255,255,${starGlowA})) brightness(${starBright})`;
-      }
-      if (starRightRef.current) {
-        starRightRef.current.style.opacity = `${starOpacity}`;
-        starRightRef.current.style.transform = `translateY(${-wb * 3}px) scale(${starScale})`;
-        starRightRef.current.style.filter = `drop-shadow(0 0 ${starGlow}px rgba(255,255,255,${starGlowA})) brightness(${starBright})`;
+      for (const ref of [starLeftRef, starRightRef, spongeRef, wallRef]) {
+        if (!ref.current) continue;
+        const baseOp = parseFloat(ref.current.dataset.baseOpacity ?? '0.75');
+        const rot = parseFloat(ref.current.dataset.baseRotation ?? '0');
+        ref.current.style.opacity = `${baseOp + wb * 0.25}`;
+        ref.current.style.transform = `rotate(${rot}deg) translateY(${-wb * 3}px) scale(${starScale})`;
+        ref.current.style.filter = `drop-shadow(0 0 ${starGlow}px rgba(255,255,255,${starGlowA})) brightness(${starBright})`;
       }
 
       // Separate wires — spring-driven scaleY pulse on beat
@@ -536,14 +536,16 @@ export default function Home() {
           alt=""
           style={{
             position: 'absolute',
-            top: '-6vw',
-            left: 'calc(50% - clamp(250px, 38vw, 500px))',
-            width: 'clamp(100px, 12vw, 180px)',
+            top: '-20%',
+            left: '3%',
+            height: 340,
+            width: 'auto',
             height: 'auto',
             maxWidth: 'none',
-            zIndex: 50,
+            zIndex: 12,
             pointerEvents: 'none',
             opacity: 0.75,
+            transform: 'rotate(-136deg)',
           }}
         />
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -553,18 +555,44 @@ export default function Home() {
           alt=""
           style={{
             position: 'absolute',
-            top: '-6vw',
-            right: 'calc(50% - clamp(250px, 38vw, 500px))',
-            width: 'clamp(100px, 12vw, 180px)',
+            top: '-20%',
+            left: '75%',
+            height: 340,
+            width: 'auto',
             height: 'auto',
             maxWidth: 'none',
-            zIndex: 50,
+            zIndex: 12,
             pointerEvents: 'none',
             opacity: 0.75,
           }}
         />
+        {/* Sponge decoration */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          ref={spongeRef}
+          src="/images/sponge.png"
+          alt=""
+          className="absolute pointer-events-none select-none"
+          style={{ left: '63%', top: '55%', height: '678px', width: 'auto', maxWidth: 'none', zIndex: 12, opacity: 0.8, transform: 'rotate(0deg)' }}
+        />
+        {/* Wall decoration */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          ref={wallRef}
+          src="/images/wall.png"
+          alt=""
+          className="absolute pointer-events-none select-none"
+          style={{ left: '-14%', top: '60%', height: '466px', width: 'auto', maxWidth: 'none', zIndex: 12, opacity: 0.45, transform: 'rotate(-10deg)' }}
+        />
         <WebringSection onVisibilityChange={handleWebringVisibility} audioRef={audioRef} />
       </div>
+
+      <DecoTuner items={[
+        { ref: starLeftRef, label: 'STAR LEFT', defaults: { x: 3, y: -20, size: 340, rotation: -136, opacity: 0.75 } },
+        { ref: starRightRef, label: 'STAR RIGHT', defaults: { x: 75, y: -20, size: 340, rotation: 0, opacity: 0.75 } },
+        { ref: spongeRef, label: 'SPONGE', defaults: { x: 63, y: 55, size: 678, rotation: 0, opacity: 0.8 } },
+        { ref: wallRef, label: 'WALL', defaults: { x: -14, y: 60, size: 466, rotation: -10, opacity: 0.45 } },
+      ]} />
 
       <div id="github" style={{ position: 'relative', zIndex: 75 }}>
         <GithubSection />
