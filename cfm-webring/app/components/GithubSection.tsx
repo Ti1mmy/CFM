@@ -2,8 +2,7 @@
 
 import { useRef, useEffect } from 'react';
 
-const FRONTEND_REPO = 'https://github.com/DanielWLiu07/CFM';
-const BACKEND_REPO = 'https://github.com/aadya-khanna/CFM-Webring-Backend';
+const REPO_URL = 'https://github.com/DanielWLiu07/CFM';
 
 const TECH_STACK = {
   frontend: [
@@ -39,7 +38,7 @@ export default function GithubSection({ onVisibilityChange }: { onVisibilityChan
   }, [onVisibilityChange]);
 
   return (
-    <section className="relative flex flex-col items-center justify-center py-20 px-6" style={{ background: '#000' }}>
+    <section className="relative flex flex-col items-center justify-center px-6" style={{ background: 'transparent', paddingTop: '6vh', paddingBottom: 0 }}>
       <div ref={sentinelRef} className="absolute top-0 left-0 w-full h-24" />
 
       {/* Terminal box */}
@@ -73,7 +72,6 @@ export default function GithubSection({ onVisibilityChange }: { onVisibilityChan
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-            {/* Frontend */}
             <div>
               <div style={{ fontFamily: 'var(--font-arcade)', fontSize: 12, color: '#fff', letterSpacing: '0.1em', marginBottom: 12 }}>
                 FRONTEND
@@ -85,7 +83,6 @@ export default function GithubSection({ onVisibilityChange }: { onVisibilityChan
               ))}
             </div>
 
-            {/* Backend */}
             <div>
               <div style={{ fontFamily: 'var(--font-arcade)', fontSize: 12, color: '#fff', letterSpacing: '0.1em', marginBottom: 12 }}>
                 BACKEND
@@ -97,7 +94,6 @@ export default function GithubSection({ onVisibilityChange }: { onVisibilityChan
               ))}
             </div>
 
-            {/* Tools */}
             <div>
               <div style={{ fontFamily: 'var(--font-arcade)', fontSize: 12, color: '#fff', letterSpacing: '0.1em', marginBottom: 12 }}>
                 TOOLS
@@ -113,62 +109,52 @@ export default function GithubSection({ onVisibilityChange }: { onVisibilityChan
           {/* Divider */}
           <div style={{ borderTop: '1px solid #222', margin: '24px 0' }} />
 
-          {/* Repo links — two separate repos */}
-          <div style={{ fontFamily: 'var(--font-arcade)', fontSize: 11, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.08em', marginBottom: 16 }}>
-            {'>'} ls repos/
+          {/* Contribute CTA */}
+          <div style={{ fontFamily: 'var(--font-arcade)', fontSize: 11, color: 'rgba(255,255,255,0.5)', marginBottom: 16, letterSpacing: '0.08em' }}>
+            {'>'} THIS PROJECT IS OPEN SOURCE.
+          </div>
+          <div style={{ fontFamily: 'var(--font-mono, monospace)', fontSize: 12, color: 'rgba(255,255,255,0.4)', marginBottom: 20, lineHeight: 1.6 }}>
+            CFM students — PRs welcome. Add yourself to the webring, fix bugs, or build new features.
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-3">
-            <a
-              href={FRONTEND_REPO}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="cta-btn flex-1"
-              style={{
-                fontFamily: 'var(--font-arcade)',
-                fontSize: 10,
-                letterSpacing: '0.1em',
-                color: '#fff',
-                border: '1px solid #444',
-                padding: '10px 16px',
-                background: 'transparent',
-                textDecoration: 'none',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 4,
-              }}
-            >
-              <span style={{ fontSize: 11 }}>FRONTEND</span>
-              <span style={{ color: 'rgba(255,255,255,0.35)', fontSize: 9 }}>Daniel Liu</span>
-            </a>
-            <a
-              href={BACKEND_REPO}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="cta-btn flex-1"
-              style={{
-                fontFamily: 'var(--font-arcade)',
-                fontSize: 10,
-                letterSpacing: '0.1em',
-                color: '#fff',
-                border: '1px solid #444',
-                padding: '10px 16px',
-                background: 'transparent',
-                textDecoration: 'none',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 4,
-              }}
-            >
-              <span style={{ fontSize: 11 }}>BACKEND</span>
-              <span style={{ color: 'rgba(255,255,255,0.35)', fontSize: 9 }}>Aadya</span>
-            </a>
-          </div>
+          <a
+            href={REPO_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="cta-btn"
+            style={{
+              fontFamily: 'var(--font-arcade)',
+              fontSize: 11,
+              letterSpacing: '0.1em',
+              color: '#fff',
+              border: '1px solid #444',
+              padding: '10px 0',
+              background: 'rgba(255,255,255,0.04)',
+              textDecoration: 'none',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 10,
+              width: '100%',
+            }}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+            </svg>
+            STAR  &  CONTRIBUTE
+          </a>
         </div>
       </div>
 
       {/* Footer */}
-      <div style={{ fontFamily: 'var(--font-arcade)', fontSize: 9, color: 'rgba(255,255,255,0.2)', marginTop: 32, letterSpacing: '0.1em', textAlign: 'center' }}>
+      <div style={{
+        fontFamily: 'var(--font-arcade)',
+        fontSize: 9,
+        color: 'rgba(255,255,255,0.15)',
+        marginTop: 32,
+        letterSpacing: '0.12em',
+        textAlign: 'center',
+      }}>
         BUILT BY CFM STUDENTS  //  2026
       </div>
     </section>

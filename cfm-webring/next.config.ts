@@ -6,6 +6,7 @@ const nextConfig: NextConfig = {
       { source: '/about', destination: '/' },
       { source: '/class', destination: '/' },
       { source: '/webring', destination: '/' },
+      { source: '/github', destination: '/' },
     ];
   },
 };
